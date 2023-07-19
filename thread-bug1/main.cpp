@@ -10,10 +10,12 @@ public:
     bool				_run = true;
     thread* _thread = nullptr;
     Base(){
-        this->enter();
+        printf("base\n");
+        //this->enter();// 放在哪里问题不大
     }
-    ~Base(){
-        this->exit();
+    virtual ~Base(){
+        //this->exit();// 不能放在这里，因为会先执行子类的析构，此时loopOver就不会调用到子类了
+        printf("~base\n");
     }
 
     void exit(){
@@ -36,8 +38,8 @@ public:
             if (!this->_run) { break; }
         }
     }
-    virtual void loopBegin() = 0;
-    virtual void loopOver() = 0;
+    virtual void loopBegin() {};
+    virtual void loopOver() {};
     static void doThread(Base* game){
         game->loopBegin();
         game->loop();
@@ -47,17 +49,27 @@ public:
 class Game :public Base {
 public:
     Game(){
-        int a = 1;
+        printf("game\n");
+        this->enter();// 在子类里面做这件事
+    }
+    ~Game(){
+        printf("~game\n");
+        this->exit();// 必须在子类里面做这件事，否则不会调用到子类的loopOver
     }
     void loopBegin()override{
         int begin = 1;		begin += 100;
+        printf("begin\n");
     }
     void loopOver()override{
         int over = 10;		over += 10;
+        printf("over\n");
     }
 };
 void main()
 {
-    auto ptr = new Game();
+    Base* ptr = new Game();
+    system("pause");
     delete ptr;
+    system("pause");
+
 }
